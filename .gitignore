@@ -4,3 +4,6 @@
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# Example Quick Check reports (kept locally, not in git)
+Docs/xps/
