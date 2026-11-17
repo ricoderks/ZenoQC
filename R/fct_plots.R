@@ -149,7 +149,7 @@ add_fail_markers <- function(p, df, y = "actual", showlegend = TRUE) {
   if (!nrow(bad)) return(p)
   p |>
     plotly::add_trace(
-      data = bad, x = ~acquired_at, y = bad[[y]], text = bad$hover,
+      data = bad, x = ~acquired_at, y = bad[[y]], text = I(bad$hover),
       type = "scatter", mode = "markers",
       marker = list(symbol = "x", size = 12, color = qc_colors$critical,
                     line = list(width = 2, color = qc_colors$critical)),
@@ -161,7 +161,7 @@ add_fail_markers <- function(p, df, y = "actual", showlegend = TRUE) {
 add_series <- function(p, df, y, color, name, showlegend = TRUE) {
   p |>
     plotly::add_trace(
-      data = df, x = ~acquired_at, y = df[[y]], text = df$hover,
+      data = df, x = ~acquired_at, y = df[[y]], text = I(df$hover),
       type = "scatter", mode = "lines+markers",
       line = list(color = color, width = 2),
       marker = list(color = color, size = 8, line = list(color = qc_colors$surface, width = 2)),
@@ -385,7 +385,7 @@ plot_status_timeline <- function(sections) {
     dd <- d[d$pass == ok, ]
     if (!nrow(dd)) next
     p <- p |> plotly::add_trace(
-      data = dd, x = ~acquired_at, y = ~row, text = ~hover, type = "scatter", mode = "markers",
+      data = dd, x = ~acquired_at, y = ~row, text = I(dd$hover), type = "scatter", mode = "markers",
       marker = list(symbol = if (ok) "square" else "x",
                     size = if (ok) 11 else 13,
                     color = if (ok) qc_colors$good else qc_colors$critical,
@@ -405,7 +405,7 @@ plot_status_timeline <- function(sections) {
                              notes$polarity, fmt_dt(notes$acquired_at), note_html(notes$comment),
                              qc_colors$muted, notes$file_name)
       p <- p |> plotly::add_trace(
-        data = notes, x = ~acquired_at, y = ~row, text = ~hover,
+        data = notes, x = ~acquired_at, y = ~row, text = I(notes$hover),
         type = "scatter", mode = "markers",
         marker = list(symbol = "diamond", size = 12, color = qc_colors$ink2,
                       line = list(width = 2, color = qc_colors$surface)),

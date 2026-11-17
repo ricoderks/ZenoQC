@@ -35,3 +35,23 @@ test_that("messages are escaped and shown in hover text and timeline", {
   names <- vapply(tl$x$data, function(t) t$name %||% "", "")
   expect_true("Message" %in% names)
 })
+
+test_that("hover text stays an array for single-point traces", {
+  # plotly.js only fills %{text} from a per-point array; a length-1 vector
+  # must not be sent as a scalar string
+  con <- db_connect(tempfile(fileext = ".sqlite"))
+  on.exit(DBI::dbDisconnect(con))
+  f <- testthat::test_path("fixtures", "pos_quickcheck.xps")
+  db_insert_report(con, parse_quickcheck(f), comment = "Single note")
+
+  tl <- plotly::plotly_build(plot_status_timeline(db_sections(con)))
+  msg <- Filter(function(t) identical(t$name, "Message"), tl$x$data)[[1]]
+  expect_length(msg$text, 1)
+  expect_s3_class(msg$text, "AsIs")
+  expect_match(msg$text, "Single note", fixed = TRUE)
+
+  b <- plotly::plotly_build(plot_ion_metric(db_ions(con), "error_ppm", limits = "band"))
+  series <- Filter(function(t) identical(t$mode, "lines+markers"), b$x$data)
+  expect_gt(length(series), 0)
+  for (t in series) expect_s3_class(t$text, "AsIs")
+})
