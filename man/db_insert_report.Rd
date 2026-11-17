@@ -4,12 +4,18 @@
 \alias{db_insert_report}
 \title{Store a parsed Quick Check report}
 \usage{
-db_insert_report(con, parsed)
+db_insert_report(con, parsed, file = NULL, comment = NULL)
 }
 \arguments{
 \item{con}{A DBI connection.}
 
 \item{parsed}{Output of [parse_quickcheck()].}
+
+\item{file}{Optional path to the original `.xps` file; when given, the
+file itself is stored in the database so it can be downloaded later.}
+
+\item{comment}{Optional message stored with the report (e.g. "instrument
+optimization performed before this check").}
 }
 \value{
 `"added"` or `"duplicate"`.

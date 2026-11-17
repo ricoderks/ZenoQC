@@ -30,7 +30,8 @@ or with `run_app(db_path = ...)`.
 
 | table | content |
 |---|---|
-| `reports` | one row per report: date/time, polarity, serial number, overall result, file name |
+| `reports` | one row per report: date/time, polarity, serial number, overall result, file name, message |
+| `report_files` | the original `.xps` file of each report (for download) |
 | `sections` | per step: result, TOF calibration slope/delay (and previous values), number of spectra |
 | `ion_metrics` | per step × calibrant ion: mass, resolution, sum intensity, ppm error with min/max/status |
 | `channel_alignment` | channel 1/3/4 vs 2 slope & intercept (initial, actual, limits, status) |
@@ -38,18 +39,27 @@ or with `run_app(db_path = ...)`.
 A report is identified by serial number + polarity + acquisition time, so
 uploading the same report twice (even renamed) stores it only once.
 
-Bulk import a folder of reports:
+Bulk import a folder of reports (the original files are stored too):
 
 ```r
 zenoQC::import_folder("Docs/xps")
 ```
 
+Add the original files to reports that were stored without them (matched by
+checksum):
+
+```r
+zenoQC::db_backfill_files("Docs/xps")
+```
+
+The original files take up space: about 1.6 MB per report.
+
 ## App pages
 
-- **Overview**: latest positive/negative result, reports in database, pass/fail timeline per step, latest key values.
-- **Positive mode / Negative mode**: mass accuracy (ppm, ±2 ppm band), resolution (with per-ion minimum), sum intensity (log) and Zeno on/off intensity ratio, TOF calibration slope & delay, detector channel alignment.
-- **Upload**: select one or more `.xps` files, preview (new / already in database / error), save.
-- **History**: all stored reports, full values of a selected report, CSV export, delete with confirmation.
+- **Overview**: latest positive/negative result (with its message), reports in database, pass/fail timeline per step with a row marking reports that have a message, latest key values.
+- **Positive mode / Negative mode** (messages show in the hover text): mass accuracy (ppm, ±2 ppm band), resolution (with per-ion minimum), sum intensity (log) and Zeno on/off intensity ratio, TOF calibration slope & delay, detector channel alignment.
+- **Upload**: select one or more `.xps` files, add an optional message (saved with every new report in the upload), preview (new / already in database / error), save.
+- **History**: all stored reports with their message, full values of a selected report, download the original XPS file, edit the message, CSV export, delete with confirmation.
 
 ## Development
 

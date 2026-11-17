@@ -61,6 +61,27 @@ fmt_num <- function(x, digits = 4) {
 
 fmt_dt <- function(x) format(x, "%d %b %Y %H:%M")
 
+# HTML-escape a user message and wrap it for a hover label.
+escape_html <- function(x) {
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  gsub(">", "&gt;", x, fixed = TRUE)
+}
+
+wrap_note <- function(x, width = 60) {
+  vapply(x, function(t) {
+    if (is.na(t) || !nzchar(t)) return("")
+    paste(escape_html(strwrap(t, width = width)), collapse = "<br>")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# "<br>Note: ..." for reports with a message, "" otherwise.
+note_html <- function(comment) {
+  if (is.null(comment)) return(character(0))
+  w <- wrap_note(comment)
+  ifelse(nzchar(w), paste0("<br><i>Note:</i> ", w), "")
+}
+
 # Placeholder shown when there is nothing to plot.
 plot_empty <- function(msg = "No data yet. Upload Quick Check reports on the Upload tab.") {
   plotly::plotly_empty(type = "scatter", mode = "markers") |>
@@ -179,6 +200,7 @@ plot_ion_metric <- function(ions, metric, sections = qc_mass_check_sections,
     fmt_num(d$actual, 6), fmt_num(d$min, 6), fmt_num(d$max, 6), d$status,
     qc_colors$muted, d$file_name
   )
+  d$hover <- paste0(d$hover, note_html(d$comment))
   x_range <- range(d$acquired_at)
   x_range <- x_range + c(-1, 1) * max(as.numeric(diff(x_range)) * 0.02, 43200)
 
@@ -250,7 +272,8 @@ plot_zeno_ratio <- function(ions) {
   si$mode <- ifelse(si$section == "TOF MS/MS Mass Check Zeno On", "on", "off")
   si$target_mz <- round(si$target_mz, 4)
   w <- tidyr::pivot_wider(
-    si[, c("report_id", "acquired_at", "file_name", "target_mz", "mode", "actual")],
+    si[, intersect(c("report_id", "acquired_at", "file_name", "comment", "target_mz", "mode",
+                     "actual"), names(si))],
     names_from = "mode", values_from = "actual", values_fn = mean
   )
   w <- w[is.finite(w$on) & is.finite(w$off) & w$off > 0, , drop = FALSE]
@@ -263,6 +286,7 @@ plot_zeno_ratio <- function(ions) {
     w$ion, fmt_dt(w$acquired_at), fmt_num(w$ratio, 3), fmt_num(w$on, 5),
     fmt_num(w$off, 5), qc_colors$muted, w$file_name
   )
+  w$hover <- paste0(w$hover, note_html(w$comment))
   w <- w[order(w$acquired_at), ]
   x_range <- range(w$acquired_at) + c(-1, 1) * 43200
   p <- plotly::plot_ly() |>
@@ -292,6 +316,7 @@ plot_calibration <- function(sections) {
     d$label, fmt_dt(d$acquired_at), d$slope, d$slope_prev, d$delay, d$delay_prev,
     d$status, qc_colors$muted, d$file_name
   )
+  d$hover <- paste0(d$hover, note_html(d$comment))
   mk <- function(y, title, legend) {
     p <- plotly::plot_ly()
     for (lab in intersect(names(cols), unique(d$label))) {
@@ -322,6 +347,7 @@ plot_alignment <- function(alignment) {
     d$label, d$parameter, fmt_dt(d$acquired_at), fmt_num(d$actual, 6), fmt_num(d$initial, 6),
     fmt_num(d$min), fmt_num(d$max), d$status, qc_colors$muted, d$file_name
   )
+  d$hover <- paste0(d$hover, note_html(d$comment))
   mk <- function(param, title, legend) {
     dp <- d[d$parameter == param, ]
     p <- plotly::plot_ly()
@@ -353,6 +379,7 @@ plot_status_timeline <- function(sections) {
   d$hover <- sprintf("<b>%s</b> mode \u00b7 %s<br>%s<br>Result: <b>%s</b><br><span style='color:%s'>%s</span>",
                      d$polarity, section_label(d$section), fmt_dt(d$acquired_at), d$status,
                      qc_colors$muted, d$file_name)
+  d$hover <- paste0(d$hover, note_html(d$comment))
   p <- plotly::plot_ly()
   for (ok in c(TRUE, FALSE)) {
     dd <- d[d$pass == ok, ]
@@ -366,6 +393,25 @@ plot_status_timeline <- function(sections) {
       hovertemplate = "%{text}<extra></extra>", name = if (ok) "Pass" else "Fail",
       inherit = FALSE
     )
+  }
+  # one marker per report that has a message (e.g. an instrument optimization)
+  if ("comment" %in% names(d)) {
+    notes <- d[!is.na(d$comment) & nzchar(d$comment), , drop = FALSE]
+    notes <- notes[!duplicated(notes$report_id), , drop = FALSE]
+    if (nrow(notes)) {
+      lv <- c(lv, "Messages")
+      notes$row <- "Messages"
+      notes$hover <- sprintf("<b>%s</b> mode<br>%s%s<br><span style='color:%s'>%s</span>",
+                             notes$polarity, fmt_dt(notes$acquired_at), note_html(notes$comment),
+                             qc_colors$muted, notes$file_name)
+      p <- p |> plotly::add_trace(
+        data = notes, x = ~acquired_at, y = ~row, text = ~hover,
+        type = "scatter", mode = "markers",
+        marker = list(symbol = "diamond", size = 12, color = qc_colors$ink2,
+                      line = list(width = 2, color = qc_colors$surface)),
+        hovertemplate = "%{text}<extra></extra>", name = "Message", inherit = FALSE
+      )
+    }
   }
   p |>
     plotly::layout(

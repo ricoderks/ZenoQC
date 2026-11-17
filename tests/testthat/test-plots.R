@@ -19,3 +19,19 @@ test_that("plot functions return plotly objects with and without data", {
     expect_no_error(plotly::plotly_build(p))
   }
 })
+
+test_that("messages are escaped and shown in hover text and timeline", {
+  con <- db_connect(tempfile(fileext = ".sqlite"))
+  on.exit(DBI::dbDisconnect(con))
+  f <- testthat::test_path("fixtures", "pos_quickcheck.xps")
+  db_insert_report(con, parse_quickcheck(f), comment = "Tuned <b>MS</b> & cleaned")
+
+  b <- plotly::plotly_build(plot_ion_metric(db_ions(con), "error_ppm", limits = "band"))
+  hover <- unlist(lapply(b$x$data, `[[`, "text"))
+  expect_true(any(grepl("Note:</i> Tuned &lt;b&gt;MS&lt;/b&gt; &amp; cleaned", hover, fixed = TRUE)))
+  expect_false(any(grepl("<b>MS</b>", hover, fixed = TRUE)))
+
+  tl <- plotly::plotly_build(plot_status_timeline(db_sections(con)))
+  names <- vapply(tl$x$data, function(t) t$name %||% "", "")
+  expect_true("Message" %in% names)
+})

@@ -16,6 +16,11 @@ mod_upload_ui <- function(id) {
           "database are recognised and skipped."),
         fileInput(ns("files"), NULL, multiple = TRUE, accept = c(".xps"),
                   buttonLabel = "Browse...", placeholder = "No files selected"),
+        textAreaInput(ns("comment"), "Message (optional)", rows = 3, width = "100%",
+                      placeholder = "e.g. Instrument optimization (positive mode) performed before this check"),
+        p(class = "small text-body-secondary",
+          "The message is saved with every new report in this upload and can be",
+          "edited later on the History page."),
         actionButton(ns("save"), "Save new reports to database",
                      icon = icon("floppy-disk"), class = "btn-primary w-100")
       )
@@ -42,10 +47,10 @@ mod_upload_server <- function(id, con, db_version) {
             {
               p <- parse_quickcheck(f$datapath[k], file_name = f$name[k])
               dup <- !is.na(db_find_report(con, p))
-              list(file = f$name[k], parsed = p,
+              list(file = f$name[k], path = f$datapath[k], parsed = p,
                    result = if (dup) "Already in database" else "New")
             },
-            error = function(e) list(file = f$name[k], parsed = NULL,
+            error = function(e) list(file = f$name[k], path = f$datapath[k], parsed = NULL,
                                      result = paste("Error:", conditionMessage(e)))
           )
         })
@@ -85,7 +90,7 @@ mod_upload_server <- function(id, con, db_version) {
         return()
       }
       out <- vapply(todo, function(x) {
-        tryCatch(db_insert_report(con, x$parsed),
+        tryCatch(db_insert_report(con, x$parsed, file = x$path, comment = input$comment),
                  error = function(e) paste("Error:", conditionMessage(e)))
       }, character(1))
       added <- sum(out == "added")
@@ -98,6 +103,7 @@ mod_upload_server <- function(id, con, db_version) {
         x
       }))
       db_version(db_version() + 1)
+      if (added > 0) updateTextAreaInput(session, "comment", value = "")
       showNotification(sprintf("%d report(s) saved to the database.", added),
                        type = if (added == length(todo)) "message" else "warning")
     })

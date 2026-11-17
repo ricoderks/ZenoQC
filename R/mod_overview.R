@@ -57,7 +57,11 @@ mod_overview_server <- function(id, con, db_version) {
         showcase = bsicons::bs_icon(if (pass) "check-circle-fill" else "x-octagon-fill"),
         theme = if (pass) "success" else "danger",
         p(format(last$acquired_at, "%d %b %Y %H:%M")),
-        p(if (days == 0) "today" else if (days == 1) "1 day ago" else sprintf("%d days ago", days))
+        p(if (days == 0) "today" else if (days == 1) "1 day ago" else sprintf("%d days ago", days)),
+        if (!is.na(last$comment) && nzchar(last$comment)) {
+          p(class = "small fst-italic mb-0", title = last$comment,
+            bsicons::bs_icon("chat-left-text"), " ", truncate_text(last$comment, 80))
+        }
       )
     }
 
