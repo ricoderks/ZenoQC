@@ -44,3 +44,8 @@ test_that("clicking About opens the popup", {
     expect_no_error(session$setInputs(open = 1))
   })
 })
+
+test_that("the Period dropdown is attached to the body so cards can't clip it", {
+  html <- as.character(period_filter_ui(NS("pos")))
+  expect_match(html, '"dropdownParent":"body"', fixed = TRUE)
+})

@@ -7,12 +7,14 @@ period_filter_ui <- function(ns, selected = "365") {
   bslib::layout_columns(
     col_widths = c(4, 8),
     fill = FALSE,
-    shiny::selectInput(
+    shiny::selectizeInput(
       ns("period"), "Period",
       choices = c("Last 30 days" = "30", "Last 90 days" = "90",
                   "Last 6 months" = "182", "Last 12 months" = "365",
                   "All data" = "all", "Custom range" = "custom"),
-      selected = selected
+      selected = selected,
+      # attach the open list to <body> so a short card (overflow: auto) can't clip it
+      options = list(dropdownParent = "body")
     ),
     shiny::conditionalPanel(
       condition = sprintf("input['%s'] == 'custom'", ns("period")),
