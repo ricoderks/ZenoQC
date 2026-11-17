@@ -2,10 +2,11 @@ Package: zenoQC
 Title: Quick Check Status Dashboard for the ZenoTOF 7600+
 Version: 0.1.0
 Authors@R: 
-    person(given = "R.J.E.",
+    person(given = "Rico",
            family = "Derks",
            role = c("aut", "cre"),
-           email = "r.j.e.derks@lumc.nl")
+           email = "r.j.e.derks@lumc.nl",
+           comment = c(ORCID = "0000-0002-6363-0857"))
 Description: A 'golem' Shiny application that extracts the results of SCIEX
     ZenoTOF 7600+ Positive and Negative Quick Status Check reports (.xps),
     stores them in a SQLite database and shows the instrument performance
