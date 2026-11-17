@@ -1,0 +1,14 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+dev_history.R
+^dev$
+^run_dev.*
+^.here$
+^Docs$
+^.*\.sqlite.*$
+^\.git$
+^\.gitignore$
+^app\.R$
+^\.claude$
+^README\.md$

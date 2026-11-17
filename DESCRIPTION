@@ -1,0 +1,38 @@
+Package: zenoQC
+Title: Quick Check Status Dashboard for the ZenoTOF 7600+
+Version: 0.1.0
+Authors@R: 
+    person(given = "R.J.E.",
+           family = "Derks",
+           role = c("aut", "cre"),
+           email = "r.j.e.derks@lumc.nl")
+Description: A 'golem' Shiny application that extracts the results of SCIEX
+    ZenoTOF 7600+ Positive and Negative Quick Status Check reports (.xps),
+    stores them in a SQLite database and shows the instrument performance
+    over time with interactive 'plotly' graphs.
+License: MIT + file LICENSE
+Depends: 
+    R (>= 4.4.0)
+Imports: 
+    bsicons,
+    bslib,
+    config,
+    DBI,
+    dplyr,
+    DT,
+    golem,
+    lubridate,
+    plotly,
+    RSQLite,
+    shiny,
+    stringr,
+    tibble,
+    tidyr,
+    tools,
+    utils,
+    xml2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Config/roxygen2/version: 8.1.1

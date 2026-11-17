@@ -1,0 +1,13 @@
+default:
+  golem_name: zenoQC
+  golem_version: 0.1.0
+  app_prod: no
+  # Location of the SQLite database holding the Quick Check history.
+  # Can be overridden with the environment variable ZENOQC_DB.
+  db_path: "~/zenoqc/zenoqc.sqlite"
+
+production:
+  app_prod: yes
+
+dev:
+  golem_wd: !expr golem::pkg_path()
