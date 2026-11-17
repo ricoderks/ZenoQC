@@ -22,3 +22,25 @@ test_that("the page has a single, versioned window title", {
   expect_true(length(titles) >= 1)
   expect_true(all(titles == sprintf("<title>%s</title>", app_title())))
 })
+
+test_that("the navbar has an About link after History", {
+  html <- as.character(app_ui(NULL))
+  expect_match(html, 'id="about-open"', fixed = TRUE)
+  expect_lt(regexpr("History", html), regexpr('id="about-open"', html))
+})
+
+test_that("the About popup explains the app and links GitHub", {
+  html <- as.character(about_modal("/x/zenoqc.sqlite"))
+  expect_match(html, "About ZenoQC", fixed = TRUE)
+  expect_match(html, 'href="https://github.com/ricoderks/ZenoQC"', fixed = TRUE)
+  expect_match(html, 'href="https://github.com/ricoderks/ZenoQC/issues"', fixed = TRUE)
+  expect_match(html, 'target="_blank"', fixed = TRUE)
+  expect_match(html, app_version(), fixed = TRUE)
+  expect_match(html, "/x/zenoqc.sqlite", fixed = TRUE)
+})
+
+test_that("clicking About opens the popup", {
+  shiny::testServer(mod_about_server, args = list(db_path = "x.sqlite"), {
+    expect_no_error(session$setInputs(open = 1))
+  })
+})

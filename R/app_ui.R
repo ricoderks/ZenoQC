@@ -27,6 +27,7 @@ app_ui <- function(request) {
                        mod_upload_ui("upload")),
       bslib::nav_panel("History", icon = bsicons::bs_icon("table"),
                        mod_history_ui("history")),
+      mod_about_ui("about"),
       bslib::nav_spacer(),
       bslib::nav_item(
         tags$span(

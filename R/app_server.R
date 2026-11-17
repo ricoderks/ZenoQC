@@ -17,4 +17,5 @@ app_server <- function(input, output, session) {
   mod_trends_server("neg", con, "Negative", db_version)
   mod_upload_server("upload", con, db_version)
   mod_history_server("history", con, db_version)
+  mod_about_server("about", path)
 }
