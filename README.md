@@ -1,5 +1,9 @@
 # zenoQC
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/ricoderks/ZenoQC/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ricoderks/ZenoQC/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 A `golem` Shiny app that tracks the status of the **ZenoTOF 7600+** from its
 SCIEX *Positive/Negative Quick Status Check* reports (`.xps`).
 
